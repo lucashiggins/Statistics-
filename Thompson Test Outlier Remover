@@ -1,0 +1,79 @@
+function xf = findoutliers(xraw)
+
+% This function removes outliers from a data set via the Thompson t method
+%                   
+%           [xf] = findoutliers(xraw)
+%
+%
+% INPUTS: 
+%           xraw - a vector of data points
+% OUTPUTS:
+%           xf - a vector of data points with outliers removed
+%
+%
+% Example of code being used:
+%   When inputing vector, use syntax below (with semicolon)
+%   findoutliers([ 23 22 1 768 84 24])
+%   returns: 
+%           xf = 
+%            22 23 24
+%
+%
+% Course: Mech 231 - spring 2020
+% Homework 7
+% Names: Barak Farhi, Lucas Higgins, Kelsey Eichelberger, Nick Del Toro
+% Date: 4/26/20
+
+
+
+
+
+% Values of Thompson's tau are put into a vector
+T = [1.15 1.393 1.572 1.656 1.711 1.749 1.777 1.798 1.815 1.829 1.84 1.849 1.858 1.865 1.871 1.876 1.881 1.885 1.889 1.893 1.896 1.899 1.902 1.904 1.906 1.908 1.910 1.911 1.913 1.914 1.916 1.917 1.919 1.92 1.921 1.922 1.923 1.924];
+
+% Input vector is sorted lowest to highest
+A = sort(xraw);
+
+% Initial Standard Deviation, Mean, and tau * Standard Deviation
+S = std(A);
+
+M = mean(A);
+
+TS = S * T(length(A)-2);
+
+% A while loop is used to compare the absolute value of the highest vector
+% value minus the mean. If this value is larger than tau * Standard
+% Deviation, the highest vector value is removed. 
+
+% Then, Standard Deviation, Mean, and tau * Standard Deviation are all
+% recalculated. 
+
+while abs(A(length(A))-M) > TS
+    A = A(1:length(A)-1);
+    S = std(A);
+    M = mean(A);
+    TS = S * T(length(A)-2);
+end
+
+% A while loop is used to compare the absolute value of the lowest vector
+% value minus the mean. If this value is larger than tau * Standard
+% Deviation, the lowest vector value is removed. 
+
+% Then, Standard Deviation, Mean, and tau * Standard Deviation are all
+% recalculated. 
+
+while abs(A(1)-M) > TS
+    A = A(2:length(A));
+    S = std(A);
+    M = mean(A);
+    TS = S * T(length(A)-2);
+end
+
+% The final vector with outlier values removed is returned 
+
+
+disp('x data without outliers : ')
+xf = A
+
+end
+
