@@ -1,0 +1,184 @@
+function [x, y, a0, a1] = regression(xr, yr)
+ 
+
+%This function finds and removes all outliers that lie outside of a 95
+%percent confidence level
+%
+%           [x, y, a0, a1] = regression(xr, yr)
+%
+% INPUTS: 
+%           xr - a vector of x points
+%           yr - a vector of y points
+% OUTPUTS:
+%           x - a vector of x points with outliers removed
+%           y - a vector of y points with outliers removed
+%           a0 - y intercept of the regression line
+%           a1 - slope of the regression line
+%
+%
+% Example of code being used:
+%   When inputing vector, use syntax below (without semicolon)
+%   regression([100 201 298 402 500 601 699 799],[4.89 4.77 3.79 3.76 2.84 4.00 2.05 1.61])
+%
+%   returns two graphs (x vs. y  &  x vs. Standardized Residuals) and the following values: 
+%
+%           x = 
+%               100   201   298   402   500   601   699   799
+%
+%           y = 
+%               4.8900    4.7700    3.7900    3.7600    2.8400    4.0000    2.0500    1.6100
+%
+% 
+%           Slope of regression line is 
+%             -0.0044
+%
+%           Y-intercept of regression line is
+%               5.4371
+%
+%
+% Course: Mech 231 - spring 2020
+% Homework 7
+% Names: Lucas Higgins
+% Date: 4/26/20
+
+
+
+
+% Check to make sure same amount of x inputs as y inputs
+n = numel(xr);
+m = numel(yr);
+if n ~= m
+    error('amount of x values must be the same as y values')
+end
+
+% 95% Correlation Coeefficients 
+CC = [3 0.997;4 0.95;5 0.878;6 0.811;7 0.754; 8 0.707; 9 0.666; 10 0.632; 11 0.602; 12 0.576;13 0.553;14 0.532;15 0.514;16 0.497;17 0.482;18 0.468; 19 0.456; 20 0.444; 25 0.396; 30 0.361; 35 0.334; 40 0.312; 45 0.294; 50 0.279; 100 0.197; 200 0.138];
+
+% A while loop is used to find means of x and y values. Through each
+% iteration of removing outliers, new means are computated. Entire bulk of
+% code is within this while loop. 
+p = 1;
+
+while  p == 1
+n = numel(xr);
+xmean = mean(xr);
+ymean = mean(yr);
+top = 0;
+bottomL = 0;
+bottomR = 0;
+i = 1;
+
+% A while loop solves for the components of the linear correlation
+% coefficient
+while i <= n
+    top = top + ((xr(i) - xmean) * (yr(i) - ymean));
+    bottomL = bottomL + ((xr(i) - xmean)^2);
+    bottomR = bottomR + ((yr(i) - ymean)^2);
+    i = i + 1;
+end
+
+% The linear correlation coeefficient is solved for. 
+rxy = top/((bottomL*bottomR)^0.5);
+z = 0;
+j = 1;
+
+% A while loop is used to find the correct value of n for the 95%
+% correlation coefficient
+while z == 0
+    if CC(j,1) < n
+        z=0;
+        j = j+1;
+    else
+        z=1;
+    end
+end
+
+% An if statement is used to compare the input data to the correlelation
+% coefficient to check for outliers. If rxy is less than the correleation
+% coefficient, an outlier is present. 
+if abs(rxy) > CC(j,2)
+    p = 0;
+else 
+    k = 1;
+    positiontoremove = 0;
+    Coef = polyfit(xr,yr,1);
+    diff = 0;
+    
+% This while loop grabs the position of the outlier to later be
+% removed.
+    while k <= n
+        if abs(yr(k)-((Coef(1)*xr(k))+Coef(2))) > diff
+            diff = abs(yr(k)-(Coef(1)*xr(k)+Coef(2)));
+            positiontoremove = k;
+        end
+        k = k + 1;
+    end
+
+% The outlier found is removed from the data. 
+xr = xr(xr~=xr(positiontoremove));
+yr = yr(yr~=yr(positiontoremove));
+
+%At this point, the outlier is removed and the entire process repeats to
+%ensure there are no more outliers. The code will continue to run until no
+%outliers are present. 
+end
+
+end
+
+
+% A plot of x and y data points without outliers.
+figure('Name', 'y versus x with line of regression')
+plot (xr,yr,'.k', 'MarkerSize',20)
+xlabel('x')
+ylabel('y')
+axis([0 1000 0 5]) 
+
+p = polyfit(xr, yr, 1);
+polyy = polyval(p, xr);
+
+% A plot of a regresssion line. 
+hold on
+plot (xr, polyy, 'b')
+grid 
+
+% The coefficients of a line of best fit. 
+Coef = polyfit(xr,yr,1);
+a0 = Coef(2);
+a1 = Coef(1);
+
+stdres = polyy - yr;
+
+% A plot of x data points and standardized residuals.
+figure('Name', 'standardized residuals versus x')
+plot (xr, stdres, '.k', 'MarkerSize',20)
+grid
+xlabel('x')
+ylabel('standardized residuals')
+
+
+% Displays the output data of x and y values, the slop of the regression
+% line, the y intercept of the regression line, and 2 plots.
+showx = ['x = '];
+disp (showx);
+disp (xr)
+
+
+showy = ['y = '];
+disp (showy);
+disp (yr)
+
+
+showslp = ['Slope of regression line is '];
+disp (showslp)
+disp(a1)
+
+showint = ['Y-intercept of regression line is'];
+disp (showint);
+disp(a0)
+
+
+
+end
+
+
+
